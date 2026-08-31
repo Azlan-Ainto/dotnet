@@ -12,3 +12,9 @@ Es dient als Projekt 1 zur Erlernung von C# und objektorientierter Programmierun
 - Anforderungsanalyse durchgeführt.
 - Entität "Mitarbeiter" erstellt.
 - Grundlegendes Debugging in Visual Studio trainiert.
+
+## Lernfortschritt Tag 2
+- Geschäftslogik von Datenmodell getrennt (`MitarbeiterVerwaltung` erstellt).
+- Verwendung von generischen Listen (`List<T>`) implementiert.
+- Schleifen (`foreach`) zur Aggregation von Daten (Durchschnittsgehalt) genutzt.
+- Listenstrukturen zur Laufzeit im Debugger analysiert.
