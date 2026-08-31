@@ -8,79 +8,106 @@ namespace MitarbeiterAnalyseTool
         {
             
             MitarbeiterVerwaltung verwaltung = new();
-
-            Mitarbeiter m1 = new("Max", 
-                                "Mustermann", 
+            // 1. Sicheres Hinzufügen mit Abteilungen
+            Mitarbeiter m1 = new("Max", "Mustermann", 
                                 new DateTime(1986, 12, 02), 
-                                5000.00m);
-
-            Mitarbeiter m2 = new("Anna", 
-                                "Schmidt", 
+                                5000.00m,
+                                Abteilung.IT
+            );
+            Mitarbeiter m2 = new("Anna", "Schmidt", 
                                 new DateTime(1990, 12, 2), 
-                                4000.90m);
-
-            Mitarbeiter m3 = new("Thomas", 
-                                "Mann", 
+                                4000.90m,
+                                Abteilung.Personal
+            );
+            Mitarbeiter m3 = new("Thomas", "Mann", 
                                 new DateTime(1950,12,2), 
-                                4500.50m);
+                                4500.50m,
+                                Abteilung.IT
+            );
 
             verwaltung.MitarbeiterHinzufuegen(m1);
             verwaltung.MitarbeiterHinzufuegen(m2);
             verwaltung.MitarbeiterHinzufuegen(m3);
-            verwaltung.AlleMitarbeiterAusgeben();
-
-            decimal durchschnittsgehalt = verwaltung.DurchschnittsgehaltsBerechnen();
-            Console.WriteLine($"\nDurchschnittsgehalt beträgt: " +
-                                $"{durchschnittsgehalt:N2} EUR ");
-            Console.WriteLine();
-            Console.WriteLine();
-
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write($"=======================================================\n");
-            Console.ResetColor();
-
-            // List<Mitarbeiter> mitarbeiterListe = new List<Mitarbeiter>();
+            verwaltung.MitarbeiterHinzufuegen(
+                            new Mitarbeiter("Max", "Mustermann",
+                                            new DateTime(1985, 5, 20),
+                                            3500.50m,
+                                            Abteilung.IT
+                            )
+            );
+            verwaltung.MitarbeiterHinzufuegen(
+                        new Mitarbeiter("Anna","Schmidt", 
+                                        new DateTime(1990, 8, 15), 
+                                        4200.00m, 
+                                        Abteilung.Vertrieb
+                        )            
+            );
+            verwaltung.MitarbeiterHinzufuegen(
+                new Mitarbeiter("Lukas", "Weber", 
+                                new DateTime(1982, 1, 30), 
+                                3800.75m, 
+                                Abteilung.IT
+                )
+            );
+            
             List<Mitarbeiter> mitarbeiterListe =
             [
-                  new(  "Max", 
-                        "Meier", 
-                        new DateTime(1986, 12, 02), 
-                        5000.00m),
-
-                  new("Anna", 
-                      "Anton", 
-                      new DateTime(1990, 12, 2), 
-                      4000.90m),
-                  new("Tim", 
-                      "Tuchel", 
-                      new DateTime(1950,12,2), 
-                      4500.50m),
-                  new("Bart", 
-                      "Baum", 
-                      new DateTime(1986,12,2), 
-                      3500.10m),
-                  new("Claudia", 
-                      "Clark", 
-                      new DateTime(1986,12, 2), 
-                      4800.20m),
-                  new("Claus",
-                      "Clown", 
+                  new("Max","Meier",
+                       new DateTime(1986, 12, 02),
+                       5000.00m,
+                       Abteilung.IT
+                  ),
+                  new("Anna","Anton",
+                      new DateTime(1990, 12, 2),
+                      4000.90m,
+                      Abteilung.Vertrieb
+                  ),
+                  new("Tim", "Tuchel",
+                      new DateTime(1950,12,2),
+                      4500.50m,
+                      Abteilung.Geschaeftsfuehrung),
+                  new("Bart", "Baum",
+                      new DateTime(1986,12,2),
+                      3500.10m,
+                      Abteilung.Vertrieb),
+                  new("Claudia","Clark",
+                      new DateTime(1986,12, 2),
+                      4800.20m,
+                      Abteilung.Vertrieb),
+                  new("Claus","Clown",
                       new DateTime(1986,12,3),
-                      4900.30m)
+                      4900.30m,
+                      Abteilung.Personal
+                  )
             ];
+            
             foreach(var  m in mitarbeiterListe)
             {
                 verwaltung.MitarbeiterHinzufuegen(m);
             }
-            verwaltung.AlleMitarbeiterAusgeben();
-            decimal gehaltmittelwert = verwaltung.DurchschnittsgehaltsBerechnen();
 
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.Write($"\n\nDer Gehaltsdurchschnitt beträgt:");
-            Console.ResetColor();
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine($" {gehaltmittelwert:N2} EUR\n");
-            Console.ResetColor();
+
+            verwaltung.MitarbeiterNachAbteilungAusgeben(Abteilung.IT);
+            verwaltung.TopVerdienerAusgeben();
+
+            // Fehlerbehandlung testen (Gehalt ist negativ)
+            Console.WriteLine("--- Versuche fehlerhaften Mitarbeiter anzulegen. ---");
+            try
+            {
+                Mitarbeiter fehlerhafterMitarbeiter = new("Peter", "Pan",
+                                                            new DateTime(200,1,1),
+                                                            -5000,
+                                                            Abteilung.Vertrieb
+                );
+
+                verwaltung.MitarbeiterHinzufuegen(fehlerhafterMitarbeiter);
+
+            }
+            catch(ArgumentException fehler)
+            {
+                Console.WriteLine($"Fehler abgefangen: {fehler.Message}.");
+
+            }
 
             Console.WriteLine("Drücke eine beliebige Taste zum Beenden.");
             Console.ReadKey();         

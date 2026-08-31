@@ -53,6 +53,51 @@ namespace MitarbeiterAnalyseTool
             return gesamtGehalt / mitarbeiterListe.Count;
         }
 
+        /// <summary>
+        ///         Filtert die Mitarbeiter nach ihrer Abteilung.
+        /// </summary>
+        /// <remarks>
+        ///         Entspricht ohne LINQ folgendem Code:
+        /// 
+        /// <code>
+        ///
+        /// foreach (Mitarbeiter mitarbeiter in mitarbeiterListe)
+        /// {
+        ///     if (mitarbeiter.MitarbeiterAbteilung == suchAbteilung)
+        ///     {
+        ///         gefilterteListe.Add(mitarbeiter);
+        ///     }
+        /// }
+        /// </code>
+        /// </remarks>
+
+        public void MitarbeiterNachAbteilungAusgeben(Abteilung gesuchteAbteilung)
+        {
+            Console.WriteLine($"\n----- Mitarbeiter in der Abteilung {gesuchteAbteilung} ----");
+            // filtert alle Mitarbeiter, die der gesuchten Abteilung entspricht.
+
+            var gesuchteMitarbeiter = mitarbeiterListe.Where(m => m.MitarbeiterAbteilug == gesuchteAbteilung).ToList();
+            if(gesuchteMitarbeiter.Count == 0)
+            {
+                Console.WriteLine("Keine Mitarbeiter in der Abteiung gefunden.");
+                return;
+            }
+            foreach(var mitarbeiter in gesuchteMitarbeiter)
+            {
+                mitarbeiter.DatenAusgeben();
+            }
+
+        }
+
+        public void TopVerdienerAusgeben()
+        {
+            Console.WriteLine("\n--- Mitarbeiter nach Gehalt(absteigen) ---");
+            var sortierteListe = mitarbeiterListe.OrderByDescending(m =>m.Gehalt).ToList();
+            foreach(var mitarbeiter in sortierteListe)
+            {
+                mitarbeiter.DatenAusgeben();
+            }
+        }
 
     }
 }

@@ -10,29 +10,34 @@ namespace MitarbeiterAnalyseTool
         public string Nachname { get; set; }
         public DateTime Geburtsdatum { get; set; }
         public decimal Gehalt {  get; set; }
+        public Abteilung MitarbeiterAbteilug { get; set; } 
 
         public Mitarbeiter(string vorname, 
                            string nachname,
                            DateTime geburtsdatum,
-                           decimal gehalt)
+                           decimal gehalt,
+                           Abteilung abteilung)
         {
+            if(gehalt < 0)
+            {
+                throw new ArgumentException("Das Gehalt darf nicht negativ sein", nameof(gehalt));
+            }
             this.Vorname = vorname;
             this.Nachname = nachname;
             this.Geburtsdatum = geburtsdatum;
             this.Gehalt = gehalt;
-
-
+            MitarbeiterAbteilug = abteilung;
         }
-
 
         public void DatenAusgeben()
         {
-            Console.WriteLine("--- Mitarbeiter Details ---\n");
-            Console.WriteLine($"Name:\t\t{Vorname} {Nachname}");
-            Console.WriteLine($"Geburtsdatum:\t{Geburtsdatum:d}");      // d == .ToShortDateString()
-
-            Console.WriteLine($"Gehalt:\t\t{Gehalt} Euro");
+            Console.WriteLine("--- Mitarbeiter Details ---\n"+
+                            $"Name:\t\t{Vorname} {Nachname}\n"+
+                            $"Geburtsdatum:\t{Geburtsdatum:d}\n"+     
+                            $"Abteilung: {MitarbeiterAbteilug}\n"+
+                            $"Gehalt:\t\t{Gehalt} Euro\n");
         }
+        // d == .ToShortDateString()        
 
     }
 }

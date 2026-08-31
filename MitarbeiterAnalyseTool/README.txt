@@ -18,3 +18,8 @@ Es dient als Projekt 1 zur Erlernung von C# und objektorientierter Programmierun
 - Verwendung von generischen Listen (`List<T>`) implementiert.
 - Schleifen (`foreach`) zur Aggregation von Daten (Durchschnittsgehalt) genutzt.
 - Listenstrukturen zur Laufzeit im Debugger analysiert.
+
+## Lernfortschritt Tag 3
+- `enum` für Abteilungen implementiert.
+- LINQ zur Datenfilterung (`.Where`) und Sortierung (`.OrderByDescending`) angewandt.
+- Konstruktor-Validierung und Ausnahmebehandlung (`try-catch`) integriert.
