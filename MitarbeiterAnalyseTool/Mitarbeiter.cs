@@ -10,23 +10,23 @@ namespace MitarbeiterAnalyseTool
         public string Nachname { get; set; }
         public DateTime Geburtsdatum { get; set; }
         public decimal Gehalt {  get; set; }
-        public Abteilung MitarbeiterAbteilug { get; set; } 
+        public Abteilung MitarbeiterAbteilung { get; set; } 
 
         public Mitarbeiter(string vorname, 
                            string nachname,
                            DateTime geburtsdatum,
                            decimal gehalt,
-                           Abteilung abteilung)
+                           Abteilung mitarbeiterabteilung)
         {
             if(gehalt < 0)
             {
                 throw new ArgumentException("Das Gehalt darf nicht negativ sein", nameof(gehalt));
             }
-            this.Vorname = vorname;
-            this.Nachname = nachname;
-            this.Geburtsdatum = geburtsdatum;
-            this.Gehalt = gehalt;
-            MitarbeiterAbteilug = abteilung;
+            Vorname = vorname;
+            Nachname = nachname;
+            Geburtsdatum = geburtsdatum;
+            Gehalt = gehalt;
+            MitarbeiterAbteilung = mitarbeiterabteilung;
         }
 
         public void DatenAusgeben()
@@ -34,7 +34,7 @@ namespace MitarbeiterAnalyseTool
             Console.WriteLine("--- Mitarbeiter Details ---\n"+
                             $"Name:\t\t{Vorname} {Nachname}\n"+
                             $"Geburtsdatum:\t{Geburtsdatum:d}\n"+     
-                            $"Abteilung: {MitarbeiterAbteilug}\n"+
+                            $"Abteilung: {MitarbeiterAbteilung}\n"+
                             $"Gehalt:\t\t{Gehalt} Euro\n");
         }
         // d == .ToShortDateString()        

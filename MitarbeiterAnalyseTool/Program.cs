@@ -6,50 +6,75 @@ namespace MitarbeiterAnalyseTool
     {
         static void Main(string[] args)
         {
-            
+
             MitarbeiterVerwaltung verwaltung = new();
+           //TestDatenErzeugen(verwaltung);
+            //verwaltung.DatenSichern();
+            verwaltung.AlleMitarbeiterAusgeben();
+            //verwaltung.AlleMitarbeiterAusgeben();
+            //verwaltung.MitarbeiterNachAbteilungAusgeben(Abteilung.IT);
+            // verwaltung.TopVerdienerAusgeben();
+            //Fehlerbehandlung testen(Gehalt ist negativ)
+                       
+
+            Console.WriteLine("Drücke eine beliebige Taste zum Beenden.");
+            Console.ReadKey();
+        }
+
+
+        private void FehlerbehandlungTesten(MitarbeiterVerwaltung verwaltung)
+        {
+            Console.WriteLine("--- Versuche fehlerhaften Mitarbeiter anzulegen. ---");
+            try
+            {
+                Mitarbeiter fehlerhafterMitarbeiter = new("Fehler", "haft",
+                    new DateTime(1990, 1, 1),
+                    -5000.00m,
+                    Abteilung.IT
+                );
+                verwaltung.MitarbeiterHinzufuegen(fehlerhafterMitarbeiter);
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"Fehler beim Hinzufügen des Mitarbeiters: {ex.Message}");
+            }
+        }
+
+        private static void TestDatenErzeugen(MitarbeiterVerwaltung verwaltung)
+        {
             // 1. Sicheres Hinzufügen mit Abteilungen
-            Mitarbeiter m1 = new("Max", "Mustermann", 
-                                new DateTime(1986, 12, 02), 
+            Mitarbeiter m1 = new("Max", "Mustermann",
+                                new DateTime(1986, 12, 02),
                                 5000.00m,
                                 Abteilung.IT
             );
-            Mitarbeiter m2 = new("Anna", "Schmidt", 
-                                new DateTime(1990, 12, 2), 
+            Mitarbeiter m2 = new("Anna", "Schmidt",
+                                new DateTime(1990, 12, 2),
                                 4000.90m,
                                 Abteilung.Personal
             );
-            Mitarbeiter m3 = new("Thomas", "Mann", 
-                                new DateTime(1950,12,2), 
+            Mitarbeiter m3 = new("Thomas", "Mann",
+                                new DateTime(1950, 12, 2),
                                 4500.50m,
                                 Abteilung.IT
             );
-
             verwaltung.MitarbeiterHinzufuegen(m1);
             verwaltung.MitarbeiterHinzufuegen(m2);
             verwaltung.MitarbeiterHinzufuegen(m3);
             verwaltung.MitarbeiterHinzufuegen(
-                            new Mitarbeiter("Max", "Mustermann",
-                                            new DateTime(1985, 5, 20),
-                                            3500.50m,
-                                            Abteilung.IT
-                            )
-            );
-            verwaltung.MitarbeiterHinzufuegen(
-                        new Mitarbeiter("Anna","Schmidt", 
-                                        new DateTime(1990, 8, 15), 
-                                        4200.00m, 
+                        new Mitarbeiter("Anna", "Schmidt",
+                                        new DateTime(1990, 8, 15),
+                                        4200.00m,
                                         Abteilung.Vertrieb
-                        )            
+                        )
             );
             verwaltung.MitarbeiterHinzufuegen(
-                new Mitarbeiter("Lukas", "Weber", 
-                                new DateTime(1982, 1, 30), 
-                                3800.75m, 
+                new Mitarbeiter("Lukas", "Weber",
+                                new DateTime(1982, 1, 30),
+                                3800.75m,
                                 Abteilung.IT
                 )
             );
-            
             List<Mitarbeiter> mitarbeiterListe =
             [
                   new("Max","Meier",
@@ -80,37 +105,10 @@ namespace MitarbeiterAnalyseTool
                       Abteilung.Personal
                   )
             ];
-            
-            foreach(var  m in mitarbeiterListe)
+            foreach (var m in mitarbeiterListe)
             {
                 verwaltung.MitarbeiterHinzufuegen(m);
             }
-
-
-            verwaltung.MitarbeiterNachAbteilungAusgeben(Abteilung.IT);
-            verwaltung.TopVerdienerAusgeben();
-
-            // Fehlerbehandlung testen (Gehalt ist negativ)
-            Console.WriteLine("--- Versuche fehlerhaften Mitarbeiter anzulegen. ---");
-            try
-            {
-                Mitarbeiter fehlerhafterMitarbeiter = new("Peter", "Pan",
-                                                            new DateTime(200,1,1),
-                                                            -5000,
-                                                            Abteilung.Vertrieb
-                );
-
-                verwaltung.MitarbeiterHinzufuegen(fehlerhafterMitarbeiter);
-
-            }
-            catch(ArgumentException fehler)
-            {
-                Console.WriteLine($"Fehler abgefangen: {fehler.Message}.");
-
-            }
-
-            Console.WriteLine("Drücke eine beliebige Taste zum Beenden.");
-            Console.ReadKey();         
         }
     }
 }

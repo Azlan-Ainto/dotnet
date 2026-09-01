@@ -23,3 +23,8 @@ Es dient als Projekt 1 zur Erlernung von C# und objektorientierter Programmierun
 - `enum` für Abteilungen implementiert.
 - LINQ zur Datenfilterung (`.Where`) und Sortierung (`.OrderByDescending`) angewandt.
 - Konstruktor-Validierung und Ausnahmebehandlung (`try-catch`) integriert.
+
+## Lernfortschritt Tag 4
+- Datenpersistenz mit `System.IO` (Dateisystem) implementiert.
+- `System.Text.Json` für die Serialisierung und Deserialisierung verwendet.
+- Architektur nach dem Single Responsibility Principle (SRP) verbessert (eigene Klasse für Dateizugriff).

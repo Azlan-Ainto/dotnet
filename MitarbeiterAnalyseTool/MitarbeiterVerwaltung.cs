@@ -4,11 +4,18 @@ namespace MitarbeiterAnalyseTool
 {
     public class MitarbeiterVerwaltung
     {
-        private readonly List<Mitarbeiter> mitarbeiterListe;
+        private readonly List<Mitarbeiter> mitarbeiterListe=[];
+        private DateiVerwaltung dateiVerwaltung;
 
         public MitarbeiterVerwaltung()
         {
-            mitarbeiterListe = new List<Mitarbeiter>();
+            dateiVerwaltung = new DateiVerwaltung();
+           mitarbeiterListe = dateiVerwaltung.DatenLaden();
+        }
+        public void DatenSichern()
+        {
+            dateiVerwaltung.DatenSpeichern(mitarbeiterListe);
+
         }
 
         public void MitarbeiterHinzufuegen(Mitarbeiter neuerMitarbeiter)
@@ -18,8 +25,6 @@ namespace MitarbeiterAnalyseTool
                               $"{neuerMitarbeiter.Nachname} " +
                               $"wurde erfolgreich hinzugefügt.");   
         }
-
-
 
         public void AlleMitarbeiterAusgeben()
         {
@@ -76,7 +81,7 @@ namespace MitarbeiterAnalyseTool
             Console.WriteLine($"\n----- Mitarbeiter in der Abteilung {gesuchteAbteilung} ----");
             // filtert alle Mitarbeiter, die der gesuchten Abteilung entspricht.
 
-            var gesuchteMitarbeiter = mitarbeiterListe.Where(m => m.MitarbeiterAbteilug == gesuchteAbteilung).ToList();
+            var gesuchteMitarbeiter = mitarbeiterListe.Where(m => m.MitarbeiterAbteilung == gesuchteAbteilung).ToList();
             if(gesuchteMitarbeiter.Count == 0)
             {
                 Console.WriteLine("Keine Mitarbeiter in der Abteiung gefunden.");
