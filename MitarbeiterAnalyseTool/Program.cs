@@ -8,17 +8,8 @@ namespace MitarbeiterAnalyseTool
         {
 
             MitarbeiterVerwaltung verwaltung = new();
-           //TestDatenErzeugen(verwaltung);
-            verwaltung.DatenSichern();
-            verwaltung.AlleMitarbeiterAusgeben();
-            //verwaltung.AlleMitarbeiterAusgeben();
-            //verwaltung.MitarbeiterNachAbteilungAusgeben(Abteilung.IT);
-            // verwaltung.TopVerdienerAusgeben();
-            //Fehlerbehandlung testen(Gehalt ist negativ)
-                       
-
-            Console.WriteLine("Drücke eine beliebige Taste zum Beenden.");
-            Console.ReadKey();
+            BenutzerSchnittstelle ui = new(verwaltung);
+            ui.Starten();
         }
 
 
