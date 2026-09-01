@@ -7,8 +7,8 @@ namespace MitarbeiterAnalyseTool
         static void Main(string[] args)
         {
 
-            MitarbeiterVerwaltung verwaltung = new();
-            BenutzerSchnittstelle ui = new(verwaltung);
+            //MitarbeiterVerwaltung verwaltung = new();
+            BenutzerSchnittstelle ui = new(new MitarbeiterVerwaltung());
             ui.Starten();
         }
 
