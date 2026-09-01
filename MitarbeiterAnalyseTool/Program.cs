@@ -9,7 +9,7 @@ namespace MitarbeiterAnalyseTool
 
             MitarbeiterVerwaltung verwaltung = new();
            //TestDatenErzeugen(verwaltung);
-            //verwaltung.DatenSichern();
+            verwaltung.DatenSichern();
             verwaltung.AlleMitarbeiterAusgeben();
             //verwaltung.AlleMitarbeiterAusgeben();
             //verwaltung.MitarbeiterNachAbteilungAusgeben(Abteilung.IT);
