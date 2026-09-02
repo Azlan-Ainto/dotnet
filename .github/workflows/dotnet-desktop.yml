@@ -1,0 +1,166 @@
+name: .NET 10 Desktop - MitarbeiterAnalyseTool
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  SOLUTION_FILE: 'MitarbeiterAnalyseTool.slnx'
+  PROJECT_FILE: 'MitarbeiterAnalyseTool/MitarbeiterAnalyseTool.csproj'
+  CONFIGURATION: 'Release'
+  RUNTIME: 'win-x64'
+
+jobs:
+
+  build:
+    name: Build and Test
+
+    runs-on: windows-latest
+
+    steps:
+
+      # ---------------------------------------------------------
+      # 1. Repository herunterladen
+      # ---------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------
+      # 2. .NET 10 installieren
+      # ---------------------------------------------------------
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # ---------------------------------------------------------
+      # 3. Abhängigkeiten wiederherstellen
+      # ---------------------------------------------------------
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
+
+      # ---------------------------------------------------------
+      # 4. Anwendung kompilieren
+      # ---------------------------------------------------------
+      - name: Build
+        run: >
+          dotnet build ${{ env.SOLUTION_FILE }}
+          --configuration ${{ env.CONFIGURATION }}
+          --no-restore
+
+      # ---------------------------------------------------------
+      # 5. Tests ausführen
+      # ---------------------------------------------------------
+      # Derzeit existiert vermutlich noch kein separates
+      # Testprojekt. Der Schritt wird deshalb nur ausgeführt,
+      # wenn ein Testprojekt vorhanden ist.
+      # ---------------------------------------------------------
+      - name: Run tests
+        shell: pwsh
+        run: |
+          $testProjects = Get-ChildItem -Path . -Filter "*Tests.csproj" -Recurse
+
+          if ($testProjects.Count -eq 0) {
+              Write-Host "Kein Testprojekt gefunden. Testschritt wird übersprungen."
+              exit 0
+          }
+
+          foreach ($testProject in $testProjects) {
+              Write-Host "Führe Tests aus: $($testProject.FullName)"
+              dotnet test $testProject.FullName `
+                --configuration $env:CONFIGURATION `
+                --no-build `
+                --verbosity normal
+
+              if ($LASTEXITCODE -ne 0) {
+                  exit $LASTEXITCODE
+              }
+          }
+
+      # ---------------------------------------------------------
+      # 6. Anwendung für Windows veröffentlichen
+      # ---------------------------------------------------------
+      - name: Publish Windows application
+        run: >
+          dotnet publish ${{ env.PROJECT_FILE }}
+          --configuration ${{ env.CONFIGURATION }}
+          --runtime ${{ env.RUNTIME }}
+          --self-contained true
+          --output ./publish/win-x64
+
+      # ---------------------------------------------------------
+      # 7. Veröffentlichtes Programm als ZIP-Datei packen
+      # ---------------------------------------------------------
+      - name: Create ZIP package
+        shell: pwsh
+        run: |
+          Compress-Archive `
+            -Path "./publish/win-x64/*" `
+            -DestinationPath "./MitarbeiterAnalyseTool-win-x64.zip"
+
+      # ---------------------------------------------------------
+      # 8. Build-Ergebnis als GitHub Artifact speichern
+      # ---------------------------------------------------------
+      - name: Upload application artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MitarbeiterAnalyseTool-win-x64
+          path: MitarbeiterAnalyseTool-win-x64.zip
+          if-no-files-found: error
+
+  # -----------------------------------------------------------
+  # Separater Job zur Überprüfung des veröffentlichten Ergebnisses
+  # -----------------------------------------------------------
+  verify:
+    name: Verify Published Application
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: MitarbeiterAnalyseTool-win-x64
+          path: ./artifact
+
+      - name: Extract artifact
+        shell: pwsh
+        run: |
+          Expand-Archive `
+            -Path "./artifact/MitarbeiterAnalyseTool-win-x64.zip" `
+            -DestinationPath "./verification"
+
+      - name: Verify executable exists
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem `
+            -Path "./verification" `
+            -Filter "*.exe" `
+            -Recurse
+
+          if ($exe.Count -eq 0) {
+              Write-Error "Keine EXE-Datei gefunden."
+              exit 1
+          }
+
+          Write-Host "Gefundene Anwendung:"
+          $exe | ForEach-Object {
+              Write-Host $_.FullName
+          }
+
+      - name: Display published files
+        shell: pwsh
+        run: |
+          Get-ChildItem `
+            -Path "./verification" `
+            -Recurse |
+            Select-Object FullName, Length
