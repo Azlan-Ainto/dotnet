@@ -28,3 +28,18 @@ Es dient als Projekt 1 zur Erlernung von C# und objektorientierter Programmierun
 - Datenpersistenz mit `System.IO` (Dateisystem) implementiert.
 - `System.Text.Json` für die Serialisierung und Deserialisierung verwendet.
 - Architektur nach dem Single Responsibility Principle (SRP) verbessert (eigene Klasse für Dateizugriff).
+
+## Lernfortschritt Tag 5
+- Interaktives Benutzermenü in der Konsole erstellt.
+- Endlosschleife (`while`) und Menüsteuerung (`switch`) implementiert.
+- Sicheres Parsen von Benutzereingaben (`TryParse`) und Typkonvertierung integriert.
+- `Program.cs` bereinigt (Clean Code).
+
+
+## Lernfortschritt Tag 6 (Projektabschluss)
+- Refactoring der Benutzeroberfläche durchgeführt (Auslagerung in Hilfsmethoden).
+- DRY-Prinzip angewendet (Wiederverwendung von `AbteilungAuswaehlen`).
+- Dynamisches Auslesen von Enums mittels `Enum.GetValues` und `Enum.IsDefined`.
+- End-to-End Test erfolgreich durchgeführt.
+
+**Projektstatus:** Abgeschlossen.

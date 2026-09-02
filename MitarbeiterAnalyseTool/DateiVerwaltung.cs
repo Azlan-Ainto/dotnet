@@ -25,7 +25,7 @@ namespace MitarbeiterAnalyseTool
 
             public List<Mitarbeiter> DatenLaden()
             {
-                if (!File.Exists(DateiName))
+                if (!File.Exists(DateiName) || new FileInfo(DateiName).Length == 0)
                 {
                     Console.WriteLine("Keine bestehende Datenbank-Datei gefunde. Starte mit leerer Liste.");
                     return new List<Mitarbeiter>();

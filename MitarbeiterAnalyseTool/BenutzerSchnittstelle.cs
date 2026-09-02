@@ -64,16 +64,10 @@ namespace MitarbeiterAnalyseTool
 
         private void AbteilungFiltern()
         {
-            Console.WriteLine("Verfügbare Abteilungen: 0=IT, 1=Vertrieb, 2=Personal, 3=Geschaeftsfuehrung");
-            Console.Write("Bitte Nummer der Abteilung eingeben: ");
-            if(Enum.TryParse<Abteilung>(Console.ReadLine(), out Abteilung abteilung))
-            {
-                mitarbeiterVerwaltung.MitarbeiterNachAbteilungAusgeben(abteilung);
-            }
-            else
-            {
-                Console.WriteLine("Ungültige Abteilungsnummer. Bitte erneut versuchen.");
-            }
+            Console.WriteLine("\nNach welchen Abteilung möchtest du filtern?");
+            Abteilung gesuchteAbteilung = AbteilungAuswaehlen();
+            mitarbeiterVerwaltung.MitarbeiterNachAbteilungAusgeben(gesuchteAbteilung);
+
         }
 
         private void MitarbeiterErfassen()
@@ -96,7 +90,7 @@ namespace MitarbeiterAnalyseTool
                 Console.WriteLine("Ungültiges Gehalt. Bitte erneut eingeben (positiver Wert):");
             }
             Abteilung mitarbeiterAbteilung;
-            mitarbeiterAbteilung = Abteilung.IT;
+            mitarbeiterAbteilung = AbteilungAuswaehlen();
             try
             {
                 Mitarbeiter neuerMitarbeiter = new(vorname, nachname, geburtsdatum, gehalt, mitarbeiterAbteilung);
@@ -109,6 +103,20 @@ namespace MitarbeiterAnalyseTool
 
         }
 
-
+        private Abteilung AbteilungAuswaehlen()
+        {
+            Console.WriteLine("Verfügbare Abteilungen:");
+            foreach (var abteilung in Enum.GetValues(typeof(Abteilung)))
+            {
+                Console.WriteLine($"{(int)abteilung} = {abteilung}");
+            }
+            Abteilung auswahl;
+            Console.WriteLine("Bitte Nummer der Abteilung eingeben: ");
+            while (!Enum.TryParse(Console.ReadLine(), out auswahl) || !Enum.IsDefined(typeof(Abteilung), auswahl))
+            {
+                Console.WriteLine("Ungültige Abteilungsnummer. Bitte erneut versuchen.");            
+            }
+            return auswahl;
+        }
     }
 }
