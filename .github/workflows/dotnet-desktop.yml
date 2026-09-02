@@ -1,17 +1,21 @@
 name: .NET 10 Desktop - MitarbeiterAnalyseTool
 
 on:
+  # ============================================================
+  # WORKFLOW AUSFÜHREN
+  # ============================================================
+
   push:
     branches:
       - main
 
-    # ---------------------------------------------------------
-    # Workflow zusätzlich bei Versionstags starten
+    # Release bei Versionstags
+    #
     # Beispiele:
     # v1.0.0
     # v1.0.1
     # v1.1.0
-    # ---------------------------------------------------------
+    #
     tags:
       - 'v*'
 
@@ -22,188 +26,417 @@ on:
   # Manueller Start über GitHub Actions
   workflow_dispatch:
 
-# -------------------------------------------------------------
-# Berechtigungen für GitHub Actions
-# contents: write ist für das Erstellen eines GitHub Releases
-# und das Hochladen des Release-Assets erforderlich.
-# -------------------------------------------------------------
+
+# ==============================================================
+# BERECHTIGUNGEN
+# ==============================================================
+#
+# contents: write wird benötigt, damit GitHub Actions
+# ein GitHub Release erstellen und Dateien hochladen darf.
+#
+# ==============================================================
+
 permissions:
   contents: write
+
+
+# ==============================================================
+# GLOBALE VARIABLEN
+# ==============================================================
 
 env:
   DOTNET_VERSION: '10.0.x'
   SOLUTION_FILE: 'MitarbeiterAnalyseTool.slnx'
   PROJECT_FILE: 'MitarbeiterAnalyseTool/MitarbeiterAnalyseTool.csproj'
+
   CONFIGURATION: 'Release'
+
   RUNTIME: 'win-x64'
+
+  PUBLISH_DIR: './publish/win-x64'
+
+  ZIP_FILE: './MitarbeiterAnalyseTool-win-x64.zip'
+
 
 jobs:
 
-  # ===========================================================
-  # JOB 1: BUILD UND TEST
-  # ===========================================================
+  # ============================================================
+  # JOB 1
+  # BUILD UND TEST
+  # ============================================================
+
   build:
+
     name: Build and Test
 
     runs-on: windows-latest
 
     steps:
 
-      # ---------------------------------------------------------
+      # ----------------------------------------------------------
       # 1. Repository herunterladen
-      # ---------------------------------------------------------
+      # ----------------------------------------------------------
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ---------------------------------------------------------
+
+      # ----------------------------------------------------------
       # 2. .NET 10 installieren
-      # ---------------------------------------------------------
+      # ----------------------------------------------------------
+
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      # ---------------------------------------------------------
-      # 3. Abhängigkeiten wiederherstellen
-      # ---------------------------------------------------------
-      - name: Restore
-        run: dotnet restore ${{ env.SOLUTION_FILE }}
 
-      # ---------------------------------------------------------
-      # 4. Anwendung kompilieren
-      # ---------------------------------------------------------
+      # ----------------------------------------------------------
+      # 3. .NET Informationen anzeigen
+      # ----------------------------------------------------------
+
+      - name: Show .NET information
+        run: dotnet --info
+
+
+      # ----------------------------------------------------------
+      # 4. NuGet-Abhängigkeiten wiederherstellen
+      # ----------------------------------------------------------
+
+      - name: Restore
+        run: dotnet restore "${{ env.SOLUTION_FILE }}"
+
+
+      # ----------------------------------------------------------
+      # 5. Anwendung kompilieren
+      # ----------------------------------------------------------
+
       - name: Build
         run: >
-          dotnet build ${{ env.SOLUTION_FILE }}
-          --configuration ${{ env.CONFIGURATION }}
+          dotnet build "${{ env.SOLUTION_FILE }}"
+          --configuration "${{ env.CONFIGURATION }}"
           --no-restore
 
-      # ---------------------------------------------------------
-      # 5. Tests ausführen
-      # ---------------------------------------------------------
+
+      # ----------------------------------------------------------
+      # 6. Tests ausführen
+      #
+      # Alle Projekte mit "*Tests.csproj" werden automatisch
+      # gesucht.
+      #
       # Falls kein Testprojekt vorhanden ist, wird der Schritt
-      # übersprungen.
-      # ---------------------------------------------------------
+      # erfolgreich übersprungen.
+      # ----------------------------------------------------------
+
       - name: Run tests
         shell: pwsh
         run: |
-          $testProjects = @(Get-ChildItem `
-            -Path . `
-            -Filter "*Tests.csproj" `
-            -Recurse `
-            -ErrorAction SilentlyContinue)
+
+          $testProjects = @(
+            Get-ChildItem `
+              -Path . `
+              -Filter "*Tests.csproj" `
+              -Recurse `
+              -ErrorAction SilentlyContinue
+          )
 
           if ($testProjects.Count -eq 0) {
-              Write-Host "Kein Testprojekt gefunden. Testschritt wird übersprungen."
-              exit 0
+
+            Write-Host "Kein Testprojekt gefunden."
+            Write-Host "Testschritt wird übersprungen."
+
+            exit 0
           }
 
           foreach ($testProject in $testProjects) {
 
-              Write-Host "Führe Tests aus: $($testProject.FullName)"
+            Write-Host ""
+            Write-Host "=============================================="
+            Write-Host "Führe Tests aus:"
+            Write-Host $testProject.FullName
+            Write-Host "=============================================="
+            Write-Host ""
 
-              dotnet test $testProject.FullName `
-                --configuration $env:CONFIGURATION `
-                --no-build `
-                --verbosity normal
+            dotnet test `
+              $testProject.FullName `
+              --configuration $env:CONFIGURATION `
+              --no-build `
+              --verbosity normal
 
-              if ($LASTEXITCODE -ne 0) {
-                  exit $LASTEXITCODE
-              }
+            if ($LASTEXITCODE -ne 0) {
+
+              Write-Error "Tests sind fehlgeschlagen."
+              exit $LASTEXITCODE
+            }
           }
 
-      # ---------------------------------------------------------
-      # 6. Anwendung für Windows veröffentlichen
-      # ---------------------------------------------------------
-      - name: Publish Windows application
-        run: >
-          dotnet publish ${{ env.PROJECT_FILE }}
-          --configuration ${{ env.CONFIGURATION }}
-          --runtime ${{ env.RUNTIME }}
-          --self-contained true
-          --output ./publish/win-x64
 
-      # ---------------------------------------------------------
-      # 7. Veröffentlichtes Programm als ZIP-Datei packen
-      # ---------------------------------------------------------
-      - name: Create ZIP package
-        shell: pwsh
-        run: |
-          Compress-Archive `
-            -Path "./publish/win-x64/*" `
-            -DestinationPath "./MitarbeiterAnalyseTool-win-x64.zip"
+  # ============================================================
+  # JOB 2
+  # WINDOWS-ANWENDUNG VERÖFFENTLICHEN
+  # ============================================================
 
-      # ---------------------------------------------------------
-      # 8. Build-Ergebnis als GitHub Actions Artifact speichern
-      # ---------------------------------------------------------
-      - name: Upload application artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: MitarbeiterAnalyseTool-win-x64
-          path: MitarbeiterAnalyseTool-win-x64.zip
-          if-no-files-found: error
+  publish:
 
-
-  # ===========================================================
-  # JOB 2: VERÖFFENTLICHTES PROGRAMM PRÜFEN
-  # ===========================================================
-  verify:
-    name: Verify Published Application
-
-    needs: build
+    name: Publish Windows Application
 
     runs-on: windows-latest
 
+    needs: build
+
+    # Nur bei einem Versionstag ausführen
+    #
+    # Beispiele:
+    # refs/tags/v1.0.0
+    # refs/tags/v1.1.0
+    #
+
+    if: startsWith(github.ref, 'refs/tags/v')
+
     steps:
 
-      # ---------------------------------------------------------
-      # 1. Build-Artefakt herunterladen
-      # ---------------------------------------------------------
-      - name: Download build artifact
-        uses: actions/download-artifact@v5
-        with:
-          name: MitarbeiterAnalyseTool-win-x64
-          path: ./artifact
+      # ----------------------------------------------------------
+      # 1. Repository herunterladen
+      # ----------------------------------------------------------
 
-      # ---------------------------------------------------------
-      # 2. ZIP-Datei entpacken
-      # ---------------------------------------------------------
-      - name: Extract artifact
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      # ----------------------------------------------------------
+      # 2. .NET 10 installieren
+      # ----------------------------------------------------------
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+
+      # ----------------------------------------------------------
+      # 3. NuGet-Abhängigkeiten wiederherstellen
+      # ----------------------------------------------------------
+
+      - name: Restore
+        run: dotnet restore "${{ env.PROJECT_FILE }}"
+
+
+      # ----------------------------------------------------------
+      # 4. Windows-x64-Anwendung veröffentlichen
+      #
+      # self-contained true bedeutet:
+      #
+      # Der Benutzer benötigt normalerweise keine separate
+      # .NET-Runtime.
+      #
+      # ----------------------------------------------------------
+
+      - name: Publish Windows x64
+        run: >
+          dotnet publish "${{ env.PROJECT_FILE }}"
+          --configuration "${{ env.CONFIGURATION }}"
+          --runtime "${{ env.RUNTIME }}"
+          --self-contained true
+          --output "${{ env.PUBLISH_DIR }}"
+          --no-restore
+
+
+      # ----------------------------------------------------------
+      # 5. Prüfen, ob die EXE erstellt wurde
+      # ----------------------------------------------------------
+
+      - name: Verify executable
         shell: pwsh
         run: |
+
+          $exeFiles = @(
+            Get-ChildItem `
+              -Path "${{ env.PUBLISH_DIR }}" `
+              -Filter "*.exe" `
+              -Recurse `
+              -ErrorAction SilentlyContinue
+          )
+
+          if ($exeFiles.Count -eq 0) {
+
+            Write-Error "Keine EXE-Datei wurde gefunden."
+            exit 1
+          }
+
+          Write-Host ""
+          Write-Host "Gefundene EXE-Dateien:"
+          Write-Host ""
+
+          foreach ($exe in $exeFiles) {
+
+            Write-Host $exe.FullName
+          }
+
+
+      # ----------------------------------------------------------
+      # 6. Veröffentliche Dateien anzeigen
+      # ----------------------------------------------------------
+
+      - name: Display published files
+        shell: pwsh
+        run: |
+
+          Write-Host ""
+          Write-Host "Veröffentlichte Dateien:"
+          Write-Host ""
+
+          Get-ChildItem `
+            -Path "${{ env.PUBLISH_DIR }}" `
+            -Recurse |
+            Select-Object FullName, Length
+
+
+      # ----------------------------------------------------------
+      # 7. ZIP-Datei erstellen
+      # ----------------------------------------------------------
+
+      - name: Create ZIP package
+        shell: pwsh
+        run: |
+
+          if (Test-Path "${{ env.ZIP_FILE }}") {
+
+            Remove-Item "${{ env.ZIP_FILE }}" -Force
+          }
+
+          Compress-Archive `
+            -Path "${{ env.PUBLISH_DIR }}\*" `
+            -DestinationPath "${{ env.ZIP_FILE }}" `
+            -CompressionLevel Optimal
+
+
+      # ----------------------------------------------------------
+      # 8. ZIP-Datei überprüfen
+      # ----------------------------------------------------------
+
+      - name: Verify ZIP package
+        shell: pwsh
+        run: |
+
+          if (!(Test-Path "${{ env.ZIP_FILE }}")) {
+
+            Write-Error "ZIP-Datei wurde nicht erstellt."
+            exit 1
+          }
+
+          $zip = Get-Item "${{ env.ZIP_FILE }}"
+
+          Write-Host ""
+          Write-Host "ZIP-Datei erfolgreich erstellt:"
+          Write-Host "Name: $($zip.Name)"
+          Write-Host "Größe: $($zip.Length) Bytes"
+          Write-Host "Pfad: $($zip.FullName)"
+
+
+      # ----------------------------------------------------------
+      # 9. ZIP als GitHub Actions Artifact speichern
+      #
+      # Das Artifact dient zur Kontrolle und steht zusätzlich
+      # im jeweiligen Workflow-Lauf zur Verfügung.
+      #
+      # ----------------------------------------------------------
+
+      - name: Upload application artifact
+        uses: actions/upload-artifact@v4
+
+        with:
+          name: MitarbeiterAnalyseTool-win-x64
+
+          path: ${{ env.ZIP_FILE }}
+
+          if-no-files-found: error
+
+
+  # ============================================================
+  # JOB 3
+  # VERÖFFENTLICHTE ANWENDUNG PRÜFEN
+  # ============================================================
+
+  verify:
+
+    name: Verify Published Application
+
+    runs-on: windows-latest
+
+    needs: publish
+
+    steps:
+
+      # ----------------------------------------------------------
+      # 1. Artifact herunterladen
+      # ----------------------------------------------------------
+
+      - name: Download application artifact
+        uses: actions/download-artifact@v5
+
+        with:
+          name: MitarbeiterAnalyseTool-win-x64
+
+          path: ./artifact
+
+
+      # ----------------------------------------------------------
+      # 2. ZIP-Datei entpacken
+      # ----------------------------------------------------------
+
+      - name: Extract application
+        shell: pwsh
+        run: |
+
           Expand-Archive `
             -Path "./artifact/MitarbeiterAnalyseTool-win-x64.zip" `
-            -DestinationPath "./verification"
+            -DestinationPath "./verification" `
+            -Force
 
-      # ---------------------------------------------------------
-      # 3. Prüfen, ob eine EXE-Datei vorhanden ist
-      # ---------------------------------------------------------
+
+      # ----------------------------------------------------------
+      # 3. EXE-Datei überprüfen
+      # ----------------------------------------------------------
+
       - name: Verify executable exists
         shell: pwsh
         run: |
 
-          $exe = @(Get-ChildItem `
-            -Path "./verification" `
-            -Filter "*.exe" `
-            -Recurse)
+          $exeFiles = @(
+            Get-ChildItem `
+              -Path "./verification" `
+              -Filter "*.exe" `
+              -Recurse `
+              -ErrorAction SilentlyContinue
+          )
 
-          if ($exe.Count -eq 0) {
-              Write-Error "Keine EXE-Datei gefunden."
-              exit 1
+          if ($exeFiles.Count -eq 0) {
+
+            Write-Error "Keine EXE-Datei im Release-Paket gefunden."
+            exit 1
           }
 
-          Write-Host "Gefundene Anwendung:"
+          Write-Host ""
+          Write-Host "Release-Paket enthält:"
+          Write-Host ""
 
-          $exe | ForEach-Object {
-              Write-Host $_.FullName
+          foreach ($exe in $exeFiles) {
+
+            Write-Host $exe.FullName
           }
 
-      # ---------------------------------------------------------
-      # 4. Veröffentlichte Dateien anzeigen
-      # ---------------------------------------------------------
-      - name: Display published files
+
+      # ----------------------------------------------------------
+      # 4. Dateien anzeigen
+      # ----------------------------------------------------------
+
+      - name: Display release files
         shell: pwsh
         run: |
+
+          Write-Host ""
+          Write-Host "Dateien im Release-Paket:"
+          Write-Host ""
 
           Get-ChildItem `
             -Path "./verification" `
@@ -211,92 +444,124 @@ jobs:
             Select-Object FullName, Length
 
 
-  # ===========================================================
-  # JOB 3: GITHUB RELEASE ERSTELLEN
-  # ===========================================================
+  # ============================================================
+  # JOB 4
+  # GITHUB RELEASE ERSTELLEN
+  # ============================================================
+
   release:
+
     name: Create GitHub Release
-
-    # Release erst erstellen, wenn Build und Verify
-    # erfolgreich abgeschlossen wurden.
-    needs: verify
-
-    # Nur bei einem Versionstag ausführen.
-    # Beispiele:
-    # v1.0.0
-    # v1.0.1
-    # v1.1.0
-    if: startsWith(github.ref, 'refs/tags/v')
 
     runs-on: windows-latest
 
+    needs: verify
+
+    # Release ausschließlich bei Versionstags
+    #
+
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    permissions:
+
+      contents: write
+
     steps:
 
-      # ---------------------------------------------------------
-      # 1. Release-Artefakt herunterladen
-      # ---------------------------------------------------------
+      # ----------------------------------------------------------
+      # 1. Release-Artifact herunterladen
+      # ----------------------------------------------------------
+
       - name: Download release artifact
         uses: actions/download-artifact@v5
+
         with:
           name: MitarbeiterAnalyseTool-win-x64
+
           path: ./release
 
-      # ---------------------------------------------------------
+
+      # ----------------------------------------------------------
       # 2. GitHub Release erstellen
-      # ---------------------------------------------------------
+      # ----------------------------------------------------------
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
+
         with:
 
-          # -----------------------------------------------------
+          # ------------------------------------------------------
           # Release-Name
           #
           # Beispiel:
-          # Tag: v1.0.0
-          # Name: MitarbeiterAnalyseTool v1.0.0
-          # -----------------------------------------------------
+          #
+          # Tag:
+          # v1.0.0
+          #
+          # Release:
+          # MitarbeiterAnalyseTool v1.0.0
+          # ------------------------------------------------------
+
           name: MitarbeiterAnalyseTool ${{ github.ref_name }}
 
-          # -----------------------------------------------------
-          # Fester Release-Inhalt
-          # -----------------------------------------------------
+
+          # ------------------------------------------------------
+          # Beschreibung des Releases
+          # ------------------------------------------------------
+
           body: |
-            ## MitarbeiterAnalyseTool ${{ github.ref_name }}
 
-            **Herausgeber:** Azlan Ainto  
-            **Entwickler:** Azlan Ainto  
-            **Technologie:** C# / .NET 10  
-            **Plattform:** Windows x64  
+            # MitarbeiterAnalyseTool ${{ github.ref_name }}
 
-            ### Beschreibung
+            **Entwickler:** Azlan Ainto
+
+            **Technologie:** C# / .NET 10
+
+            **Anwendungstyp:** Konsolenanwendung
+
+            **Plattform:** Windows x64
+
+            ## Beschreibung
 
             MitarbeiterAnalyseTool ist eine C#/.NET-10-Konsolenanwendung
             zur Verwaltung und Analyse von Mitarbeiterdaten.
 
-            ### Installation
+            ## Installation
 
             1. ZIP-Datei herunterladen.
             2. ZIP-Datei entpacken.
-            3. Die EXE-Datei starten.
+            3. Die enthaltene EXE-Datei starten.
 
-            ### Veröffentlichung
+            ## Technische Informationen
 
-            Diese Version wird als selbstständige Windows-x64-Anwendung
-            veröffentlicht.
+            Diese Version wurde als selbstständige
+            Windows-x64-Anwendung veröffentlicht.
+
+            Eine separate .NET-Runtime ist normalerweise
+            nicht erforderlich.
+
+            ## Lizenz / Copyright
 
             © 2026 Azlan Ainto
 
-          # -----------------------------------------------------
-          # GitHub erzeugt zusätzlich automatisch Release Notes
-          # -----------------------------------------------------
+
+          # ------------------------------------------------------
+          # GitHub erstellt automatisch zusätzliche Release Notes
+          # ------------------------------------------------------
+
           generate_release_notes: true
 
-          # -----------------------------------------------------
-          # ZIP-Datei als Release-Asset hochladen
-          # -----------------------------------------------------
-          files: ./release/MitarbeiterAnalyseTool-win-x64.zip
 
-          # -----------------------------------------------------
-          # Workflow abbrechen, falls das Asset fehlt
-          # -----------------------------------------------------
+          # ------------------------------------------------------
+          # ZIP-Datei als Release-Asset hochladen
+          # ------------------------------------------------------
+
+          files: |
+            ./release/MitarbeiterAnalyseTool-win-x64.zip
+
+
+          # ------------------------------------------------------
+          # Workflow abbrechen, wenn das Asset fehlt
+          # ------------------------------------------------------
+
           fail_on_unmatched_files: true
