@@ -22,8 +22,6 @@
 	<Copyright>© 2026 Azlan Ainto</Copyright>
 	<PackageIcon>appicon.png</PackageIcon>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<RepositoryUrl>https://github.com/Azlan-Ainto/dotnet.git</RepositoryUrl>
-	<RepositoryType>git</RepositoryType>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
