@@ -5,11 +5,30 @@ on:
     branches:
       - main
 
+    # ---------------------------------------------------------
+    # Workflow zusätzlich bei Versionstags starten
+    # Beispiele:
+    # v1.0.0
+    # v1.0.1
+    # v1.1.0
+    # ---------------------------------------------------------
+    tags:
+      - 'v*'
+
   pull_request:
     branches:
       - main
 
+  # Manueller Start über GitHub Actions
   workflow_dispatch:
+
+# -------------------------------------------------------------
+# Berechtigungen für GitHub Actions
+# contents: write ist für das Erstellen eines GitHub Releases
+# und das Hochladen des Release-Assets erforderlich.
+# -------------------------------------------------------------
+permissions:
+  contents: write
 
 env:
   DOTNET_VERSION: '10.0.x'
@@ -20,6 +39,9 @@ env:
 
 jobs:
 
+  # ===========================================================
+  # JOB 1: BUILD UND TEST
+  # ===========================================================
   build:
     name: Build and Test
 
@@ -59,14 +81,17 @@ jobs:
       # ---------------------------------------------------------
       # 5. Tests ausführen
       # ---------------------------------------------------------
-      # Derzeit existiert vermutlich noch kein separates
-      # Testprojekt. Der Schritt wird deshalb nur ausgeführt,
-      # wenn ein Testprojekt vorhanden ist.
+      # Falls kein Testprojekt vorhanden ist, wird der Schritt
+      # übersprungen.
       # ---------------------------------------------------------
       - name: Run tests
         shell: pwsh
         run: |
-          $testProjects = Get-ChildItem -Path . -Filter "*Tests.csproj" -Recurse
+          $testProjects = @(Get-ChildItem `
+            -Path . `
+            -Filter "*Tests.csproj" `
+            -Recurse `
+            -ErrorAction SilentlyContinue)
 
           if ($testProjects.Count -eq 0) {
               Write-Host "Kein Testprojekt gefunden. Testschritt wird übersprungen."
@@ -74,7 +99,9 @@ jobs:
           }
 
           foreach ($testProject in $testProjects) {
+
               Write-Host "Führe Tests aus: $($testProject.FullName)"
+
               dotnet test $testProject.FullName `
                 --configuration $env:CONFIGURATION `
                 --no-build `
@@ -107,7 +134,7 @@ jobs:
             -DestinationPath "./MitarbeiterAnalyseTool-win-x64.zip"
 
       # ---------------------------------------------------------
-      # 8. Build-Ergebnis als GitHub Artifact speichern
+      # 8. Build-Ergebnis als GitHub Actions Artifact speichern
       # ---------------------------------------------------------
       - name: Upload application artifact
         uses: actions/upload-artifact@v4
@@ -116,22 +143,31 @@ jobs:
           path: MitarbeiterAnalyseTool-win-x64.zip
           if-no-files-found: error
 
-  # -----------------------------------------------------------
-  # Separater Job zur Überprüfung des veröffentlichten Ergebnisses
-  # -----------------------------------------------------------
+
+  # ===========================================================
+  # JOB 2: VERÖFFENTLICHTES PROGRAMM PRÜFEN
+  # ===========================================================
   verify:
     name: Verify Published Application
+
     needs: build
+
     runs-on: windows-latest
 
     steps:
 
+      # ---------------------------------------------------------
+      # 1. Build-Artefakt herunterladen
+      # ---------------------------------------------------------
       - name: Download build artifact
         uses: actions/download-artifact@v5
         with:
           name: MitarbeiterAnalyseTool-win-x64
           path: ./artifact
 
+      # ---------------------------------------------------------
+      # 2. ZIP-Datei entpacken
+      # ---------------------------------------------------------
       - name: Extract artifact
         shell: pwsh
         run: |
@@ -139,13 +175,17 @@ jobs:
             -Path "./artifact/MitarbeiterAnalyseTool-win-x64.zip" `
             -DestinationPath "./verification"
 
+      # ---------------------------------------------------------
+      # 3. Prüfen, ob eine EXE-Datei vorhanden ist
+      # ---------------------------------------------------------
       - name: Verify executable exists
         shell: pwsh
         run: |
-          $exe = Get-ChildItem `
+
+          $exe = @(Get-ChildItem `
             -Path "./verification" `
             -Filter "*.exe" `
-            -Recurse
+            -Recurse)
 
           if ($exe.Count -eq 0) {
               Write-Error "Keine EXE-Datei gefunden."
@@ -153,14 +193,110 @@ jobs:
           }
 
           Write-Host "Gefundene Anwendung:"
+
           $exe | ForEach-Object {
               Write-Host $_.FullName
           }
 
+      # ---------------------------------------------------------
+      # 4. Veröffentlichte Dateien anzeigen
+      # ---------------------------------------------------------
       - name: Display published files
         shell: pwsh
         run: |
+
           Get-ChildItem `
             -Path "./verification" `
             -Recurse |
             Select-Object FullName, Length
+
+
+  # ===========================================================
+  # JOB 3: GITHUB RELEASE ERSTELLEN
+  # ===========================================================
+  release:
+    name: Create GitHub Release
+
+    # Release erst erstellen, wenn Build und Verify
+    # erfolgreich abgeschlossen wurden.
+    needs: verify
+
+    # Nur bei einem Versionstag ausführen.
+    # Beispiele:
+    # v1.0.0
+    # v1.0.1
+    # v1.1.0
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    runs-on: windows-latest
+
+    steps:
+
+      # ---------------------------------------------------------
+      # 1. Release-Artefakt herunterladen
+      # ---------------------------------------------------------
+      - name: Download release artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: MitarbeiterAnalyseTool-win-x64
+          path: ./release
+
+      # ---------------------------------------------------------
+      # 2. GitHub Release erstellen
+      # ---------------------------------------------------------
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+
+          # -----------------------------------------------------
+          # Release-Name
+          #
+          # Beispiel:
+          # Tag: v1.0.0
+          # Name: MitarbeiterAnalyseTool v1.0.0
+          # -----------------------------------------------------
+          name: MitarbeiterAnalyseTool ${{ github.ref_name }}
+
+          # -----------------------------------------------------
+          # Fester Release-Inhalt
+          # -----------------------------------------------------
+          body: |
+            ## MitarbeiterAnalyseTool ${{ github.ref_name }}
+
+            **Herausgeber:** Azlan Ainto  
+            **Entwickler:** Azlan Ainto  
+            **Technologie:** C# / .NET 10  
+            **Plattform:** Windows x64  
+
+            ### Beschreibung
+
+            MitarbeiterAnalyseTool ist eine C#/.NET-10-Konsolenanwendung
+            zur Verwaltung und Analyse von Mitarbeiterdaten.
+
+            ### Installation
+
+            1. ZIP-Datei herunterladen.
+            2. ZIP-Datei entpacken.
+            3. Die EXE-Datei starten.
+
+            ### Veröffentlichung
+
+            Diese Version wird als selbstständige Windows-x64-Anwendung
+            veröffentlicht.
+
+            © 2026 Azlan Ainto
+
+          # -----------------------------------------------------
+          # GitHub erzeugt zusätzlich automatisch Release Notes
+          # -----------------------------------------------------
+          generate_release_notes: true
+
+          # -----------------------------------------------------
+          # ZIP-Datei als Release-Asset hochladen
+          # -----------------------------------------------------
+          files: ./release/MitarbeiterAnalyseTool-win-x64.zip
+
+          # -----------------------------------------------------
+          # Workflow abbrechen, falls das Asset fehlt
+          # -----------------------------------------------------
+          fail_on_unmatched_files: true
