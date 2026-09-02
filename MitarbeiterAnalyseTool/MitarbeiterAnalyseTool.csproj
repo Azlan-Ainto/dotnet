@@ -7,17 +7,38 @@
     <Nullable>enable</Nullable>
 
 	  <!-- Hersteller / Herausgeber -->
-	  <Authors>Azlan Ainto</Authors>
-	  <Company>Techsoft Westfalen</Company>
+	<Authors>Azlan Ainto</Authors>
+	<Company>Techsoft Westfalen</Company>
 
 	  <!-- Anwendung -->
-	  <Product>MitarbeiterAnalyseTool</Product>
-	  <Description>
-		  Konsolenanwendung zur Verwaltung und Analyse von Mitarbeiterdaten.
-	  </Description>
+	<Product>MitarbeiterAnalyseTool</Product>
+	<Description>
+		  Konsolenanwendung 
+		  zur Verwaltung und 
+		  Analyse von Mitarbeiterdaten.
+	</Description>
 
 	  <!-- Copyright -->
-	  <Copyright>© 2026 Azlan Ainto</Copyright>
+	<Copyright>© 2026 Azlan Ainto</Copyright>
+	<PackageIcon>appicon.png</PackageIcon>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<RepositoryUrl>https://github.com/Azlan-Ainto/dotnet.git</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\..\Pictures\appicon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
