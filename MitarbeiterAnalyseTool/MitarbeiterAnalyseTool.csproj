@@ -5,32 +5,17 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
-	  <!-- Hersteller / Herausgeber -->
 	<Authors>Azlan Ainto</Authors>
 	<Company>Techsoft Westfalen</Company>
-
-	  <!-- Anwendung -->
 	<Product>MitarbeiterAnalyseTool</Product>
-	<Description>
-		  Konsolenanwendung 
-		  zur Verwaltung und 
-		  Analyse von Mitarbeiterdaten.
+	<Description> 
+		Konsolenanwendung zur Verwaltung und Analyse von Mitarbeiterdaten.
 	</Description>
-
-	  <!-- Copyright -->
 	<Copyright>© 2026 Azlan Ainto</Copyright>
-	<PackageIcon>appicon.png</PackageIcon>
+	<PackageIcon></PackageIcon>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="..\..\..\..\Pictures\appicon.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
 
   <ItemGroup>
     <None Update="README.md">
