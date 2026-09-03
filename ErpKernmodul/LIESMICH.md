@@ -10,3 +10,8 @@ Entwicklung eines relationalen Datenbankmodells unter Nutzung von Entity Framewo
 - `ErpKontext` (DbContext) erstellt und Verbindungszeichenfolge (Connection String) konfiguriert.
 - Code-First-Migration durchgeführt (`Add-Migration`, `Update-Database`) und physische SQL-Datenbank erstellt.
 
+## Lernfortschritt Tag 8
+- Geschäftslogik-Schicht (`KundenVerwaltung`) zur Kapselung des Datenzugriffs erstellt.
+- Entity Framework Core CRUD-Operationen (Erstellen, Lesen, Aktualisieren, Löschen) implementiert.
+- Nutzung von `using`-Blöcken zur sicheren Ressourcenfreigabe (`IDisposable`) des DbContexts.
+- Verifikation der SQL-Daten über den Visual Studio SQL Server-Objekt-Explorer.
