@@ -21,3 +21,9 @@ Entwicklung eines relationalen Datenbankmodells unter Nutzung von Entity Framewo
 - Primärschlüssel- und Fremdschlüsselbeziehungen in C# modelliert (`[ForeignKey]`).
 - Eager Loading (`.Include()`) angewendet, um SQL-JOIN-Operationen über Entity Framework auszuführen.
 - Zweite Code-First-Migration erfolgreich auf die SQL-Datenbank angewendet.
+
+## Lernfortschritt Tag 10
+- Projektstruktur in logische Ordner (`Schnittstellen`, `Repositorys`, `Geschaeftslogik`) unterteilt.
+- Schnittstelle `IKundenRepository` zur Entkopplung definiert (Clean Architecture).
+- `KundenRepository` als Implementierung für den EF Core Datenzugriff erstellt.
+- Dependency Injection (Konstruktor-Injektion) implementiert: Die `KundenVerwaltung` kennt keine Datenbank mehr.
