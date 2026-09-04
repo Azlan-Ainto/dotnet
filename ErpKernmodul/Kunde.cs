@@ -20,10 +20,8 @@ namespace ErpKernmodul
         [MaxLength(255)]
         public string Ansprechpartner { get; set; } = string.Empty;
         public DateTime Erfassunsdatum { get; set; } = DateTime.Now;
-
-    }
-
-
-
-    
+        //Navigationseigenschaft für die Beziehung zu Bestellung
+        // 1:n Beziehung zwischen Kunde und Bestellung
+        public ICollection<Bestellung> Bestellungen { get; set; } = [];
+    }      
 }

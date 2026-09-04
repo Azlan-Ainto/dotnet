@@ -8,6 +8,9 @@ namespace ErpKernmodul
     public class ErpKontext : DbContext
     {
         public DbSet<Kunde> Kunden { get; set; }
+        // Bestelltabelle dem Kontext hinzufügen
+
+        public DbSet<Bestellung> Bestellungen { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

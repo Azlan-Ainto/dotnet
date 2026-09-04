@@ -6,12 +6,43 @@ namespace ErpKernmodul
         public static void Main(string[] args)
         {
             Console.WriteLine("=== ERP-Kernmodul - Datenbank Testlauf ===\n");
-            
-            KundenVerwaltung kundenVerwaltung = new();       
+            // 
+            // 1. Kundenverwaltung initialisieren und einige Bestellungen anlegen
+            KundenVerwaltung kundenVerwaltung = new();
+            kundenVerwaltung.BestellungFuerKundeAnlegen(7, 1450.50m, "Musterstraße 1, 12345 Musterstadt");
+            kundenVerwaltung.BestellungFuerKundeAnlegen(7, 299.99m, "Berliner Platz 2, 58089 Hagen");
+            kundenVerwaltung.BestellungFuerKundeAnlegen(7, 1200.00m, "Berliner Platz 2, 58089 Hagen");
+            kundenVerwaltung.BestellungFuerKundeAnlegen(8, 500.00m, "Hagener Straße 50, 58135 Hagen");
+            kundenVerwaltung.BestellungFuerKundeAnlegen(8, 750.00m, "Hagener Straße 50, 58135 Hagen");
+            kundenVerwaltung.BestellungFuerKundeAnlegen(9, 250.00m, "Hauptstraße 10, 58095 Hagen");
+            // 2. Kunden samt ihrer Bestellungen ausgeben
+            AlleKudenMitBestellungenAusgeben(kundenVerwaltung);
             //AlleKundenEntfernen(new KundenVerwaltung());
             //NeuenKundeErstellen(kundenVerwaltung);
-            kundenVerwaltung.KundeAktualisieren(7, "Erika Milner");
-            AlleKundenAusgeben(kundenVerwaltung);
+            // kundenVerwaltung.KundeAktualisieren(7, "Erika Milner");
+            //AlleKundenAusgeben(kundenVerwaltung);
+        }
+
+        private static void AlleKudenMitBestellungenAusgeben(KundenVerwaltung kundenVerwaltung)
+        {
+            Console.WriteLine("\n--- Kundenbericht inkl. Bestellhistorie ---");
+            List<Kunde> kundenMitBestellungen = kundenVerwaltung.AlleKundenMitBestellungenLaden();
+            foreach (var kunde in kundenMitBestellungen)
+            {
+                Console.WriteLine($"Firma: {kunde.Firmenname} (Kundennummer: {kunde.KundenNummer})");
+                if (kunde.Bestellungen.Any())
+                {
+                    Console.WriteLine("Bestellungen:");
+                    foreach (var bestellung in kunde.Bestellungen)
+                    {
+                        Console.WriteLine($"->ID: {bestellung.BestellId} |" +
+                            $" Datum: {bestellung.Bestelldatum.ToShortDateString()} |" +
+                            $" Betrag: {bestellung.Gesamtbetrag} Euro | " +
+                            $"Lieferung: {bestellung.Lieferadresse}");
+                    }
+                }
+
+            }
         }
 
         private static void NeuenKundeErstellen(KundenVerwaltung kundenVerwaltung)

@@ -15,3 +15,9 @@ Entwicklung eines relationalen Datenbankmodells unter Nutzung von Entity Framewo
 - Entity Framework Core CRUD-Operationen (Erstellen, Lesen, Aktualisieren, Löschen) implementiert.
 - Nutzung von `using`-Blöcken zur sicheren Ressourcenfreigabe (`IDisposable`) des DbContexts.
 - Verifikation der SQL-Daten über den Visual Studio SQL Server-Objekt-Explorer.
+
+## Lernfortschritt Tag 9
+- 1:n-Beziehung zwischen Entitäten implementiert (`Kunde` und `Bestellung`).
+- Primärschlüssel- und Fremdschlüsselbeziehungen in C# modelliert (`[ForeignKey]`).
+- Eager Loading (`.Include()`) angewendet, um SQL-JOIN-Operationen über Entity Framework auszuführen.
+- Zweite Code-First-Migration erfolgreich auf die SQL-Datenbank angewendet.
